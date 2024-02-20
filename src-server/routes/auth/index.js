@@ -35,7 +35,7 @@ module.exports = (app) => {
     return res.json({ user, token });
   });
 
-  router.get('/me', auth.authenticate, (req, res) => res.json(req.user));
+  router.get('/me', auth.authenticateFirebase, (req, res) => res.json(req.user));
 
   return router;
 };

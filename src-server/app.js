@@ -2,19 +2,41 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const logger = require('morgan');
-const passport = require('passport');
+const cors = require('cors');
 const DB = require('./db.js');
-const apiPosts = require('./routes/api/posts');
-const apiAuth = require('./routes/auth');
+const apiCards = require('./routes/api/cards');
+const { authenticateFirebase } = require('./components/auth/helpers'); // middleware
 
 module.exports = async () => {
   const app = express();
 
-  // view engine setup
-  app.set('views', path.join(__dirname, 'views'));
-  app.set('view engine', 'ejs');
+  // Enable CORS
+  const corsOptions = {
+    origin: 'http://localhost:3000', // or use a function to dynamically set origin based on the request
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true, // if your frontend needs to pass credentials
+  };
+  
+  // Enable CORS using corsOptions
+  app.use(cors(corsOptions));
 
+  app.use((err, req, res, next) => {
+    console.error(err.stack); // Logs the stack trace with line numbers
+    res.status(500).send('Something broke!');
+  });
+
+  console.log('cors enabled');
+  app.use(authenticateFirebase);
+
+  // view engine setup
+  // app.set('views', path.join(__dirname, 'views'));
+  // app.set('view engine', 'ejs');
+
+  // This is the middleware that logs requests to the console
   app.use(logger('dev'));
+  
+  // Important
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
@@ -22,22 +44,18 @@ module.exports = async () => {
   app.set('db', db);
 
   app.use(express.static(path.join(__dirname, '../public')));
+  console.log('static files served');
 
-  // Enable CORS
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
-    next();
-  });
-
-  passport.use(require('./components/auth/local')(app));
-  passport.use(require('./components/auth/jwt')(app));
+  // passport.use(require('./components/auth/local')(app));
+  // passport.use(require('./components/auth/jwt')(app));
 
   app.get('/', (req, res) => res.json({ status: 'ok' }));
-  app.use('/auth', apiAuth(app));
-  app.use('/api', apiPosts(app));
+  // app.use('/auth', apiAuth(app));
+  // app.use('/api', apiPosts(app));
+  console.log('api routes set');
+  app.use('/api', apiCards(app));
 
+  console.log('api cards')
   /*
   app.use('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/app/dist/index.html'));

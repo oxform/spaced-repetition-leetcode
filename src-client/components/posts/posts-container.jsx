@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-
 import PostAdd from './posts-add';
 import PostTable from './posts-table';
 

@@ -1,208 +1,107 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from 'react';
+import { Redirect, Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/authContext';
+import { doCreateUserWithEmailAndPassword } from '../../auth/firebase/auth';
 
-import API from '../../api/api';
-import { withStore } from '../../store';
+const Register = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setconfirmPassword] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-class SignUp extends React.Component {
-  constructor(props) {
-    const defaults = {
-      email: '', firstName: '', lastName: '', password: '', password2: ''
-    };
+  const { userLoggedIn } = useAuth();
 
-    super(props);
-    this.state = { user: defaults, formErrors: { } };
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-  }
-
-  handleSubmit(event) {
-    event.preventDefault();
-    const { user, formErrors } = this.state;
-    const { history, store } = this.props;
-
-    Object.keys(user).forEach((field) => this.validateField(field));
-    const hasErrors = Object.values(formErrors).filter((e) => e).length;
-
-    if (!user || hasErrors) return;
-    API.post('auth/register', user)
-      .then(({ data }) => {
-        this.setState({ error: null });
-        store.set('user', data.user);
-        localStorage.setItem('token', data.token);
-        history.push('/');
-      })
-      .catch((error) => {
-        this.setState({ error });
-      });
-  }
-
-  handleChange(event) {
-    const { user } = this.state;
-    const name = event.target.id;
-    const { value } = event.target;
-    user[name] = value;
-    this.setState({ user }, () => { this.validateField(name, value); });
-  }
-
-  validateField(fieldName) {
-    const { formErrors, user } = this.state;
-    const value = user[fieldName];
-    let valid;
-
-    switch (fieldName) {
-      case 'email':
-        valid = value.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i);
-        formErrors.email = valid ? '' : 'Email is invalid';
-        break;
-      case 'firstName':
-      case 'lastName':
-        valid = !!value;
-        formErrors[fieldName] = valid ? '' : 'Please fill this field';
-        break;
-      case 'password':
-        valid = value.length >= 6;
-        formErrors.password = valid ? '' : 'Password is too short';
-        break;
-      case 'password2':
-        valid = value === user.password;
-        formErrors.password2 = valid ? '' : 'Password doesn\'t match';
-        break;
-      default:
-        break;
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (!isRegistering) {
+      setIsRegistering(true);
+      await doCreateUserWithEmailAndPassword(email, password);
     }
-    this.setState({ formErrors });
-  }
+  };
 
-  // eslint-disable-next-line class-methods-use-this
-  errorClass(error) {
-    return (error ? 'is-invalid' : '');
-  }
+  return (
+    <>
+      {userLoggedIn && (<Redirect to="/" />)}
 
-  render() {
-    const { user, formErrors, error } = this.state;
-    return (
-      <div className="card text-left mb-3">
-        <div className="card-body">
-          <form onSubmit={this.handleSubmit}>
-            { error && (
-              <div className="alert alert-danger">
-                Some error occurred
-              </div>
-            )}
-            <div className="form-group">
-              <label htmlFor="email">
+      <main className="w-full h-screen flex self-center place-content-center place-items-center">
+        <div className="w-96 text-gray-600 space-y-5 p-4 shadow-xl border rounded-xl">
+          <div className="text-center mb-6">
+            <div className="mt-2">
+              <h3 className="text-gray-800 text-xl font-semibold sm:text-2xl">Create a New Account</h3>
+            </div>
+
+          </div>
+          <form
+            onSubmit={onSubmit}
+            className="space-y-4"
+          >
+            <div>
+              <label className="text-sm text-gray-600 font-bold">
                 Email
               </label>
               <input
                 type="email"
-                className={`form-control ${this.errorClass(formErrors.email)}`}
-                id="email"
-                aria-describedby="email"
-                placeholder="Enter email"
-                onChange={this.handleChange}
-                value={user.email}
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); }}
+                className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:indigo-600 shadow-sm rounded-lg transition duration-300"
               />
-              {formErrors.email && (
-                <div className="invalid-feedback">
-                  {formErrors.email}
-                </div>
-              )}
             </div>
 
-            <div className="form-group">
-              <label htmlFor="firstName">
-                First Name
-              </label>
-              <input
-                type="text"
-                className={`form-control ${this.errorClass(formErrors.firstName)}`}
-                id="firstName"
-                aria-describedby="firstName"
-                placeholder="Enter first name"
-                onChange={this.handleChange}
-                value={user.firstName}
-              />
-              {formErrors.firstName && (
-                <div className="invalid-feedback">
-                  {formErrors.firstName}
-                </div>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="lastName">
-                Last Name
-              </label>
-              <input
-                type="lastName"
-                className={`form-control ${this.errorClass(formErrors.lastName)}`}
-                id="lastName"
-                aria-describedby="lastName"
-                placeholder="Enter last name"
-                onChange={this.handleChange}
-                value={user.lastName}
-              />
-              {formErrors.lastName && (
-                <div className="invalid-feedback">
-                  {formErrors.lastName}
-                </div>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="password">
+            <div>
+              <label className="text-sm text-gray-600 font-bold">
                 Password
               </label>
               <input
+                disabled={isRegistering}
                 type="password"
-                className={`form-control ${this.errorClass(formErrors.password)}`}
-                id="password"
-                placeholder="Enter password"
-                onChange={this.handleChange}
-                value={user.password}
+                autoComplete="new-password"
+                required
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); }}
+                className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg transition duration-300"
               />
-              {formErrors.password && (
-                <div className="invalid-feedback">
-                  {formErrors.password}
-                </div>
-              )}
             </div>
 
-            <div className="form-group">
-              <label htmlFor="password2">
-                Repeat Password
+            <div>
+              <label className="text-sm text-gray-600 font-bold">
+                Confirm Password
               </label>
               <input
+                disabled={isRegistering}
                 type="password"
-                className={`form-control ${this.errorClass(formErrors.password2)}`}
-                id="password2"
-                placeholder="Enter password2"
-                onChange={this.handleChange}
-                value={user.password2}
+                autoComplete="off"
+                required
+                value={confirmPassword}
+                onChange={(e) => { setconfirmPassword(e.target.value); }}
+                className="w-full mt-2 px-3 py-2 text-gray-500 bg-transparent outline-none border focus:border-indigo-600 shadow-sm rounded-lg transition duration-300"
               />
-              {formErrors.password2 && (
-                <div className="invalid-feedback">
-                  {formErrors.password2}
-                </div>
-              )}
             </div>
-            <div className="btn-group" role="group" aria-label="">
-              <button type="submit" className="btn btn-primary">
-                Sign Up
-              </button>
+
+            {errorMessage && (
+            <span className="text-red-600 font-bold">{errorMessage}</span>
+            )}
+
+            <button
+              type="submit"
+              disabled={isRegistering}
+              className={`w-full px-4 py-2 text-white font-medium rounded-lg ${isRegistering ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300'}`}
+            >
+              {isRegistering ? 'Signing Up...' : 'Sign Up'}
+            </button>
+            <div className="text-sm text-center">
+              Already have an account?
+              {' '}
+              {'   '}
+              <Link to="/login" className="text-center text-sm hover:underline font-bold">Continue</Link>
             </div>
           </form>
         </div>
-      </div>
-    );
-  }
-}
-
-SignUp.propTypes = {
-  // eslint-disable-next-line react/forbid-prop-types
-  history: PropTypes.object.isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
-  store: PropTypes.object.isRequired,
+      </main>
+    </>
+  );
 };
-export default withStore(SignUp);
+
+export default Register;

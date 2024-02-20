@@ -1,41 +1,52 @@
-const Router = require('express-promise-router');
-const _ = require('lodash');
-const Posts = require('../../components/posts');
-const auth = require('../../components/auth/helpers');
+const Router = require("express-promise-router");
+const _ = require("lodash");
+const Posts = require("../../components/posts");
+const auth = require("../../components/auth/helpers");
+let fetch;
+
+(async () => {
+  fetch = (await import("node-fetch")).default;
+})();
 
 module.exports = (app) => {
   const router = Router();
   const posts = Posts(app);
 
   // Create
-  router.post('/', auth.authenticate, async (req, res) => {
-    const data = await posts.create(req.user, _.pick(req.body, 'content', 'title'));
+  router.post("/", auth.authenticate, async (req, res) => {
+    const data = await posts.create(
+      req.user,
+      _.pick(req.body, "content", "title")
+    );
     res.json(data);
   });
 
   // Get all
-  router.get('/', auth.authenticate, async (req, res) => {
+  router.get("/", auth.authenticate, async (req, res) => {
     const data = await posts.get();
     res.json(data);
   });
 
   // Get one
-  router.get('/:id(\\d+)', auth.authenticate, async (req, res) => {
+  router.get("/:id(\\d+)", auth.authenticate, async (req, res) => {
     const data = await posts.getOne(req.params.id);
     res.json(data);
   });
 
   // Update
-  router.put('/:id(\\d+)', auth.authenticate, async (req, res) => {
-    const data = await posts.update(req.params.id, _.pick(req.body, 'content', 'title'));
+  router.put("/:id(\\d+)", auth.authenticate, async (req, res) => {
+    const data = await posts.update(
+      req.params.id,
+      _.pick(req.body, "content", "title")
+    );
     res.json(data);
   });
 
   // Delete
-  router.delete('/:id(\\d+)', auth.authenticate, async (req, res) => {
+  router.delete("/:id(\\d+)", auth.authenticate, async (req, res) => {
     const data = await posts.delete(req.params.id);
     res.json(data);
   });
 
-  return Router().use('/posts', router);
+  return Router().use("/posts", router);
 };

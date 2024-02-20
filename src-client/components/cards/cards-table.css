@@ -1,0 +1,63 @@
+
+.due-block {
+  padding: 6px 12px !important;
+  border-radius: 12px !important;
+  color: white;
+}
+
+.table-danger-bg {
+  background-color: #dc3545  !important;
+}
+
+.table-warning-bg {
+  background-color: #d1a522  !important;
+  color: white;
+}
+
+.table-success-bg {
+  background-color: #23943d  !important;
+}
+
+.table-primary-bg {
+  background-color: #007bff  !important;
+}
+
+.Hard {
+  background-color: #dc3545  !important;
+  
+  justify-content: center;
+  display: flex;
+}
+
+.Medium {
+  background-color: #d1a522  !important;
+  color: white;
+
+
+  justify-content: center;
+  display: flex;
+}
+
+.Easy {
+  background-color: #23943d  !important;
+
+  justify-content: center;
+  display: flex;
+}
+
+
+/* Align vertically center in td span */
+td {
+  padding: 0px;
+  vertical-align: middle;
+}
+
+.gray-chevron {
+  color: rgba(128, 128, 128, 0.568) !important;
+  margin-left: 5px;
+}
+
+.black-chevron {
+  color: black !important;
+  margin-left: 5px;
+}

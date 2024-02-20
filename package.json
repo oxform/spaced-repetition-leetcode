@@ -13,12 +13,14 @@
     "babel-plugin-named-asset-import": "^0.3.7",
     "babel-preset-airbnb": "^5.0.0",
     "bfj": "^7.0.2",
-    "bootstrap": "^4.5.3",
+    "bootstrap": "^4.6.2",
     "browserslist": "^4.16.1",
     "camelcase": "^6.1.0",
     "case-sensitive-paths-webpack-plugin": "2.3.0",
     "concurrently": "^5.3.0",
+    "cors": "^2.8.5",
     "css-loader": "4.3.0",
+    "dayjs": "^1.11.10",
     "dotenv": "8.2.0",
     "dotenv-expand": "5.1.0",
     "eslint": "^7.11.0",
@@ -37,6 +39,8 @@
     "extract-text-webpack-plugin": "3.0.2",
     "faker": "^5.1.0",
     "file-loader": "6.1.1",
+    "firebase": "^10.8.0",
+    "firebase-admin": "^12.0.0",
     "fs-extra": "^9.0.1",
     "html-webpack-plugin": "4.5.0",
     "http-errors": "^1.8.0",
@@ -46,10 +50,11 @@
     "jest-resolve": "26.6.0",
     "jest-watch-typeahead": "0.6.1",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "massive": "^6.6.1",
     "mini-css-extract-plugin": "0.11.3",
     "morgan": "^1.10.0",
+    "node-fetch": "^3.3.2",
     "node-pg-migrate": "^5.9.0",
     "nodemon": "^2.0.6",
     "object-assign": "4.1.1",
@@ -67,8 +72,10 @@
     "prop-types": "^15.7.2",
     "react": "^17.0.1",
     "react-app-polyfill": "^2.0.0",
+    "react-bootstrap": "^2.10.0",
     "react-dev-utils": "^11.0.1",
     "react-dom": "^17.0.1",
+    "react-icons": "^5.0.1",
     "react-refresh": "^0.9.0",
     "react-router-dom": "^5.2.0",
     "resolve": "1.11.0",
@@ -99,11 +106,6 @@
     "test:client": "node scripts/test.js --env=jsdom",
     "test:server": "node scripts/test.js --config=config/jest/server.json",
     "update-version": "npm --no-git-tag-version version patch"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint"
-    }
   },
   "jest": {
     "roots": [
