@@ -23,7 +23,7 @@ const App = () => {
       <Router>
         <div className="App">
           <Header />
-          <div className="container" style={{ marginTop: "20px" }}>
+          <div className="container" style={{ marginTop: "80px" }}>
             <div>
               {/* <SearchBar setResults={setResults} />
             {results && results.length > 0 && <SearchResultsList results={results} />} */}
