@@ -1,5 +1,5 @@
-const { auth } = require('firebase-admin');
-const { initializeApp } = require('firebase-admin/app');
+const { auth } = require("firebase-admin");
+const { initializeApp } = require("firebase-admin/app");
 
 const config = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -13,25 +13,30 @@ const config = {
 
 initializeApp(config);
 
+const ignorePaths = ["/api/cards/leetcode-problems"];
+
 // Middleware to authenticate Firebase token
 const authenticateFirebase = async (req, res, next) => {
   const authorizationHeader = req.headers.authorization;
 
+  if (ignorePaths.includes(req.path)) {
+    return next();
+  }
   if (!authorizationHeader) {
-    return res.status(401).send('Authorization header is required');
+    return res.status(401).send("Authorization header is required");
   }
 
-  const token = authorizationHeader.split('Bearer ')[1];
+  const token = authorizationHeader.split("Bearer ")[1];
   try {
     const decodedToken = await auth().verifyIdToken(token);
     req.user = decodedToken; // or just req.uid = decodedToken.uid if you prefer
     next();
   } catch (error) {
-    console.error('Error verifying Firebase ID token:', error);
-    res.status(403).send('Unauthorized');
+    console.error("Error verifying Firebase ID token:", error);
+    res.status(403).send("Unauthorized");
   }
 };
 
 module.exports = {
-  authenticateFirebase
+  authenticateFirebase,
 };

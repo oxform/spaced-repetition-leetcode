@@ -22,22 +22,16 @@ module.exports = (app) => {
     "leetcodeDifficulty",
     "leetcodeUrl",
     "repetition",
-    "attempts"
-  ]
+    "attempts",
+  ];
 
   // Create
   router.post("/", auth.authenticateFirebase, async (req, res) => {
-    const data = await cards.create(
-      req.user,
-      _.pick(
-        req.body,
-        cardFields
-      )
-    );
+    const data = await cards.create(req.user, _.pick(req.body, cardFields));
     res.json(data);
   });
 
-  router.get("/leetcode-problems", auth.authenticateFirebase, async (req, res) => {
+  router.get("/leetcode-problems", async (req, res) => {
     try {
       const { searchKeywords } = req.query;
       console.log("search keywords", searchKeywords);
@@ -162,10 +156,7 @@ module.exports = (app) => {
   router.put("/:id(\\d+)", auth.authenticateFirebase, async (req, res) => {
     const data = await cards.update(
       req.params.id,
-      _.pick(
-        req.body,
-        cardFields
-      )
+      _.pick(req.body, cardFields)
     );
     res.json(data);
   });

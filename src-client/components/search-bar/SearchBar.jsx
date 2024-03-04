@@ -1,13 +1,13 @@
-import { FaSearch } from 'react-icons/fa';
-import React, { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import './SearchBar.css';
-import { debounce } from 'lodash';
-import { getAuth } from 'firebase/auth';
-import API from '../../api/api';
+import { FaSearch } from "react-icons/fa";
+import React, { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
+import "./SearchBar.css";
+import { debounce } from "lodash";
+import { getAuth } from "firebase/auth";
+import API from "../../api/api";
 
 const SearchBar = ({ setResults }) => {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
 
   const fetchData = useCallback(
     debounce(async (value) => {
@@ -15,28 +15,18 @@ const SearchBar = ({ setResults }) => {
         setResults([]);
         return;
       }
-  
-      const auth = getAuth();
-      const user = auth.currentUser;
-      const idToken = await user.getIdToken();
-      
+
       const url = new URL(
-        '/api/cards/leetcode-problems',
+        "/api/cards/leetcode-problems",
         window.location.origin
       );
-      url.searchParams.append('searchKeywords', value);
-  
+      url.searchParams.append("searchKeywords", value);
+
       try {
-        API.get(url.toString(), {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
-        }).then(async (response) => {
+        API.get(url.toString()).then(async (response) => {
           const data = await response.data;
-          console.log('response', data);
           setResults(data);
           // check results
-          
         });
       } catch (error) {
         // console.error('Error fetching data: ', error);

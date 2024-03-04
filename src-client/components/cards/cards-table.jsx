@@ -1,9 +1,9 @@
-import React from 'react';
-import { FaTrash } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-import { getAuth } from 'firebase/auth';
-import API from '../../api/api';
-import './cards-table.css';
+import React from "react";
+import { FaTrash } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import API from "../../api/api";
+import "./cards-table.css";
 
 class CardTable extends React.Component {
   constructor(props) {
@@ -12,14 +12,17 @@ class CardTable extends React.Component {
       cards: [],
       sort: {
         column: null,
-        direction: 'desc',
+        direction: "desc",
       },
     };
     this.fetchCards = this.fetchCards.bind(this);
     this.getByID = this.getByID.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.fetchCards();
     this.handleRemoveCard = this.handleRemoveCard.bind(this);
+  }
+
+  componentDidMount() {
+    this.fetchCards();
   }
 
   handleChange(event) {
@@ -31,15 +34,26 @@ class CardTable extends React.Component {
     });
   }
 
-  handleRemoveCard(event, id) {
+  async handleRemoveCard(event, id) {
     event.preventDefault();
-    API.delete(`/api/cards/${id}`)
-      .then(() => {
-        this.fetchCards();
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    // check if user is logged in
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) {
+      // remove from local storage
+      const cards = await JSON.parse(localStorage.getItem("cards"));
+      const newCards = cards.filter((card) => card.id !== id);
+      localStorage.setItem("cards", JSON.stringify(newCards));
+      await this.fetchCards();
+    } else {
+      API.delete(`/api/cards/${id}`)
+        .then(() => {
+          this.fetchCards();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   }
 
   onSort(column, dir = null) {
@@ -47,19 +61,24 @@ class CardTable extends React.Component {
       let direction;
 
       if (!dir) {
-        direction = this.state.sort.column === column
-          ? (this.state.sort.direction === 'asc' ? 'desc' : 'asc')
-          : 'desc';
+        direction =
+          this.state.sort.column === column
+            ? this.state.sort.direction === "asc"
+              ? "desc"
+              : "asc"
+            : "desc";
       } else dir = direction;
 
       const sortedData = this.state.cards.sort((a, b) => {
-        if (column === 'due_in') {
+        if (column === "due_in") {
           const diffB = new Date(a.due_date) - new Date();
           const diffA = new Date(b.due_date) - new Date();
-          return direction === 'asc' ? diffA - diffB : diffB - diffA;
+          return direction === "asc" ? diffA - diffB : diffB - diffA;
         }
-        if (column === 'leetcodeName') {
-          return direction === 'asc' ? a[column].localeCompare(b[column]) : b[column].localeCompare(a[column]);
+        if (column === "leetcodeName") {
+          return direction === "asc"
+            ? a[column].localeCompare(b[column])
+            : b[column].localeCompare(a[column]);
         }
         // if (column === 'last_reviewed') {
         //   return direction === 'asc' ? new Date(a[column]) - new Date(b[column]) : new Date(b[column]) - new Date(a[column]);
@@ -67,10 +86,14 @@ class CardTable extends React.Component {
         // if (column === 'due_date') {
         //   return direction === 'asc' ? new Date(a[column]) - new Date(b[column]) : new Date(b[column]) - new Date(a[column]);
         // }
-        if (column === 'attempts') {
-          return direction === 'asc' ? a[column] - b[column] : b[column] - a[column];
+        if (column === "attempts") {
+          return direction === "asc"
+            ? a[column] - b[column]
+            : b[column] - a[column];
         }
-        return direction === 'asc' ? a[column].localeCompare(b[column]) : b[column].localeCompare(a[column]);
+        return direction === "asc"
+          ? a[column].localeCompare(b[column])
+          : b[column].localeCompare(a[column]);
       });
 
       this.setState({
@@ -95,14 +118,28 @@ class CardTable extends React.Component {
   }
 
   async fetchCards() {
-    try {
-      await API.get('/api/cards')
-        .then((res) => {
+    // Check if user is logged in
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) {
+      // Get from local storage if not logged in
+      const cards = await JSON.parse(localStorage.getItem("cards"));
+      if (cards) {
+        console.log("cards", cards);
+        this.setState({ cards: cards });
+        this.onSort("due_in", "asc")(); // Reset sort and sort by due in
+      }
+    }
+    // Fetch from API if logged in
+    else {
+      try {
+        await API.get("/api/cards").then((res) => {
           this.setState({ cards: res.data });
-          this.onSort('due_in', 'asc')(); // Reset sort and sort by due in
+          this.onSort("due_in", "asc")(); // Reset sort and sort by due in
         });
-    } catch (error) {
-      console.error('Error fetching ID token:', error);
+      } catch (error) {
+        console.error("Error fetching ID token:", error);
+      }
     }
   }
 
@@ -124,27 +161,28 @@ class CardTable extends React.Component {
       }
 
       // Determine the time remaining
-      let timeRemaining = '';
-      let rowColor = '';
+      let timeRemaining = "";
+      let rowColor = "";
       if (diff < 0) {
-        timeRemaining = 'Study';
-        rowColor = 'table-primary-bg';
+        timeRemaining = "Study";
+        rowColor = "table-primary-bg";
       } else if (days > 0) {
-        const plural = days > 1 ? 's' : '';
+        const plural = days > 1 ? "s" : "";
         // Include the hours only if it's less than 24 after rounding up
-        const hoursText = hours > 0 ? ` ${hours} hour${hours > 1 ? 's' : ''}` : '';
+        const hoursText =
+          hours > 0 ? ` ${hours} hour${hours > 1 ? "s" : ""}` : "";
         timeRemaining = `${days} day${plural}${hoursText}`;
-        rowColor = 'table-success-bg';
+        rowColor = "table-success-bg";
       } else if (hours === 1) {
         timeRemaining = `${minutes} minutes`;
-        rowColor = 'table-danger-bg';
+        rowColor = "table-danger-bg";
       } else if (hours === 24) {
-        timeRemaining = '1 day';
-        rowColor = 'table-success-bg';
+        timeRemaining = "1 day";
+        rowColor = "table-success-bg";
       } else if (hours > 0) {
         // Use the rounded-up hours value
-        timeRemaining = `${hours} hour${hours > 1 ? 's' : ''}`;
-        rowColor = 'table-warning-bg';
+        timeRemaining = `${hours} hour${hours > 1 ? "s" : ""}`;
+        rowColor = "table-warning-bg";
       }
 
       return (
@@ -156,11 +194,13 @@ class CardTable extends React.Component {
           </td>
           <td>
             <div className="center">
-              <a href={item.leetcodeUrl} target="_blank" rel="noreferrer" style={{ color: 'black' }}>
-                {item.leetcodeFrontendId}
-                .
-                {' '}
-                {item.leetcodeName}
+              <a
+                href={item.leetcodeUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: "black" }}
+              >
+                {item.leetcodeFrontendId}.{item.leetcodeName}
               </a>
             </div>
           </td>
@@ -176,9 +216,7 @@ class CardTable extends React.Component {
                 </button>
               </Link>
             ) : (
-              <span className={`${rowColor} due-block`}>
-                {timeRemaining}
-              </span>
+              <span className={`${rowColor} due-block`}>{timeRemaining}</span>
             )}
           </td>
           <td>{item.attempts}</td>
@@ -188,7 +226,10 @@ class CardTable extends React.Component {
               type="button"
               className="btn btn-danger"
               style={{
-                display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '8px'
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: "8px",
               }}
               onClick={(event) => this.handleRemoveCard(event, item.id)}
             >
@@ -204,16 +245,44 @@ class CardTable extends React.Component {
           <table className="table table-hover table-responsive-sm">
             <thead>
               <tr>
-                <th scope="col" onClick={this.onSort('leetcodeDifficulty')} style={{ cursor: 'pointer' }}>
+                <th
+                  scope="col"
+                  onClick={this.onSort("leetcodeDifficulty")}
+                  style={{ cursor: "pointer" }}
+                >
                   Difficulty
-                  <span className={this.state.sort.column === 'leetcodeDifficulty' ? 'black-chevron' : 'gray-chevron'}>
-                    {this.state.sort.column === 'leetcodeDifficulty' ? (this.state.sort.direction === 'asc' ? '▲' : '▼') : '▲'}
+                  <span
+                    className={
+                      this.state.sort.column === "leetcodeDifficulty"
+                        ? "black-chevron"
+                        : "gray-chevron"
+                    }
+                  >
+                    {this.state.sort.column === "leetcodeDifficulty"
+                      ? this.state.sort.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
                   </span>
                 </th>
-                <th scope="col" onClick={this.onSort('leetcodeName')} style={{ cursor: 'pointer' }}>
+                <th
+                  scope="col"
+                  onClick={this.onSort("leetcodeName")}
+                  style={{ cursor: "pointer" }}
+                >
                   Name
-                  <span className={this.state.sort.column === 'leetcodeName' ? 'black-chevron' : 'gray-chevron'}>
-                    {this.state.sort.column === 'leetcodeName' ? (this.state.sort.direction === 'asc' ? '▲' : '▼') : '▲'}
+                  <span
+                    className={
+                      this.state.sort.column === "leetcodeName"
+                        ? "black-chevron"
+                        : "gray-chevron"
+                    }
+                  >
+                    {this.state.sort.column === "leetcodeName"
+                      ? this.state.sort.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
                   </span>
                 </th>
                 {/* <th scope="col" onClick={this.onSort('last_reviewed')} style={{ cursor: 'pointer' }}>
@@ -228,16 +297,42 @@ class CardTable extends React.Component {
                     {this.state.sort.column === 'due_date' ? (this.state.sort.direction === 'asc' ? '▲' : '▼') : '▲'}
                   </span>
                 </th> */}
-                <th onClick={this.onSort('due_in')} style={{ cursor: 'pointer' }}>
+                <th
+                  onClick={this.onSort("due_in")}
+                  style={{ cursor: "pointer" }}
+                >
                   Due in
-                  <span className={this.state.sort.column === 'due_in' ? 'black-chevron' : 'gray-chevron'}>
-                    {this.state.sort.column === 'due_in' ? (this.state.sort.direction === 'asc' ? '▲' : '▼') : '▲'}
+                  <span
+                    className={
+                      this.state.sort.column === "due_in"
+                        ? "black-chevron"
+                        : "gray-chevron"
+                    }
+                  >
+                    {this.state.sort.column === "due_in"
+                      ? this.state.sort.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
                   </span>
                 </th>
-                <th onClick={this.onSort('attempts')} style={{ cursor: 'pointer' }}>
+                <th
+                  onClick={this.onSort("attempts")}
+                  style={{ cursor: "pointer" }}
+                >
                   Attempts
-                  <span className={this.state.sort.column === 'attempts' ? 'black-chevron' : 'gray-chevron'}>
-                    {this.state.sort.column === 'attempts' ? (this.state.sort.direction === 'asc' ? '▲' : '▼') : '▲'}
+                  <span
+                    className={
+                      this.state.sort.column === "attempts"
+                        ? "black-chevron"
+                        : "gray-chevron"
+                    }
+                  >
+                    {this.state.sort.column === "attempts"
+                      ? this.state.sort.direction === "asc"
+                        ? "▲"
+                        : "▼"
+                      : "▲"}
                   </span>
                 </th>
                 <th />

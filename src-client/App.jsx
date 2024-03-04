@@ -13,7 +13,7 @@ import "./App.css";
 import { createStore } from "./store";
 import PrivateRoute from "./private-route";
 import API from "./api/api";
-import { AuthProvider } from "./contexts/authContext"
+import { AuthProvider } from "./contexts/authContext";
 import { useState, useEffect } from "react";
 
 // Define the main app
@@ -23,7 +23,7 @@ const App = () => {
       <Router>
         <div className="App">
           <Header />
-          <div className="container" style={{ marginTop: "80px" }}>
+          <div className="container" style={{ marginTop: "35px" }}>
             <div>
               {/* <SearchBar setResults={setResults} />
             {results && results.length > 0 && <SearchResultsList results={results} />} */}

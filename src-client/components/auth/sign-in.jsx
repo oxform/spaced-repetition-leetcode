@@ -25,6 +25,7 @@ const Login = () => {
     if (!isSigningIn) {
       setIsSigningIn(true);
       doSignInWithGoogle().catch((err) => {
+        console.log('Sign in google error', err);
         setIsSigningIn(false);
       });
     }
@@ -87,7 +88,7 @@ const Login = () => {
           </form>
           <p className="text-center text-sm">
             Don't have an account?
-            <Link to="/register" className="hover:underline font-bold">Sign up</Link>
+            <Link to="/sign-up" className="hover:underline font-bold">Sign up</Link>
           </p>
           <div className="flex flex-row text-center w-full">
             <div className="border-b-2 mb-2.5 mr-2 w-full" />

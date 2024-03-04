@@ -4,6 +4,9 @@
   "private": true,
   "dependencies": {
     "@babel/core": "7.12.3",
+    "@fortawesome/fontawesome-svg-core": "^6.5.1",
+    "@fortawesome/free-solid-svg-icons": "^6.5.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.2",
     "@svgr/webpack": "5.4.0",
     "axios": "^0.21.0",
@@ -86,6 +89,7 @@
     "supertest": "^6.0.1",
     "terser-webpack-plugin": "4.2.3",
     "url-loader": "4.1.1",
+    "uuid": "^9.0.1",
     "webpack": "4.44.2",
     "webpack-dev-server": "3.11.0",
     "webpack-manifest-plugin": "2.2.0",
